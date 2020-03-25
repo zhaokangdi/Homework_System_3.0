@@ -7,69 +7,102 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StudentJdbc {
-    JdbcUtil jdbc_util = new JdbcUtil();
+    private static final Logger logger = LoggerFactory.getLogger(StudentJdbc.class);
 
     public void InsertStudent(Student student) {
-        jdbc_util.Connect();
-
+        Connection connection = null;
+        PreparedStatement stmt = null;
         String sql;
         sql = "INSERT INTO STUDENT VALUES (?)";
-        try {
-            jdbc_util.stmt = jdbc_util.conn.prepareStatement(sql);
-            jdbc_util.stmt.setString(1, student.getStudent_name());
-            jdbc_util.stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        jdbc_util.Close();
+        try {
+            // 获得连接
+            connection = JDBCUtils.getConnection();
+            // 开启事务设置非自动提交
+            JDBCUtils.startTransaction();
+            // 获得Statement对象
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, student.getStudent_name());
+            stmt.executeUpdate();
+
+            // 提交事务
+            JDBCUtils.commit();
+        } catch(Exception e) {
+            JDBCUtils.rollback();
+        } finally {
+            // 释放资源
+            JDBCUtils.release(connection, stmt, null);
+        }
     }
 
     public List<Homework> QueryHomework(Student student) {
-        jdbc_util.Connect();
-
+        Connection connection = null;
+        PreparedStatement stmt = null;
         List<Homework> homework_list = new ArrayList<>();
+
         String sql;
         sql = "SELECT * FROM HOMEWORK WHERE HOMEWORK.TEACHER_NAME IN (SELECT TEACH.TEACHER_NAME FROM TEACH WHERE STUDENT_NAME=?)";
+
         try {
-            jdbc_util.stmt = jdbc_util.conn.prepareStatement(sql);
-            jdbc_util.stmt.setString(1, student.getStudent_name());
-            ResultSet rs = jdbc_util.stmt.executeQuery();
+            // 获得连接
+            connection = JDBCUtils.getConnection();
+            // 开启事务设置非自动提交
+            JDBCUtils.startTransaction();
+            // 获得Statement对象
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, student.getStudent_name());
+
+            ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Homework homework = new Homework();
                 homework.setHomework_title(rs.getString("homework_title"));
                 homework.setTeacher_name(rs.getString("teacher_name"));
                 homework_list.add(homework);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch(Exception e) {
+            JDBCUtils.rollback();
+        } finally {
+            // 释放资源
+            JDBCUtils.release(connection, stmt, null);
         }
 
-        jdbc_util.Close();
         return homework_list;
     }
 
     public boolean QuerySubmit(Student student, String homework_title, String teacher_name) {
-        jdbc_util.Connect();
-
+        Connection connection = null;
+        PreparedStatement stmt = null;
         Integer number = 0;
+
         String sql;
         sql = "SELECT COUNT(*) FROM SUBMIT WHERE HOMEWORK_TITLE=? AND TEACHER_NAME=? AND STUDENT_NAME=?";
+
         try {
-            jdbc_util.stmt = jdbc_util.conn.prepareStatement(sql);
-            jdbc_util.stmt.setString(1, homework_title);
-            jdbc_util.stmt.setString(2, teacher_name);
-            jdbc_util.stmt.setString(3, student.getStudent_name());
-            ResultSet rs = jdbc_util.stmt.executeQuery();
+            // 获得连接
+            connection = JDBCUtils.getConnection();
+            // 开启事务设置非自动提交
+            JDBCUtils.startTransaction();
+            // 获得Statement对象
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, homework_title);
+            stmt.setString(2, teacher_name);
+            stmt.setString(3, student.getStudent_name());
+
+            ResultSet rs = stmt.executeQuery();
             if(rs.next()) {
                 number = rs.getInt(1);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch(Exception e) {
+            JDBCUtils.rollback();
+        } finally {
+            // 释放资源
+            JDBCUtils.release(connection, stmt, null);
         }
 
-        jdbc_util.Close();
         if(number == 0) {
             return true;
         }else {
@@ -78,21 +111,32 @@ public class StudentJdbc {
     }
 
     public void InsertSubmit(String homework_title, String teacher_name, Student student, String content) {
-        jdbc_util.Connect();
+        Connection connection = null;
+        PreparedStatement stmt = null;
 
         String sql;
         sql = "INSERT INTO SUBMIT VALUES (?,?,?,?)";
-        try {
-            jdbc_util.stmt = jdbc_util.conn.prepareStatement(sql);
-            jdbc_util.stmt.setString(1, homework_title);
-            jdbc_util.stmt.setString(2, teacher_name);
-            jdbc_util.stmt.setString(3, student.getStudent_name());
-            jdbc_util.stmt.setString(4, content);
-            jdbc_util.stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        jdbc_util.Close();
+        try {
+            // 获得连接
+            connection = JDBCUtils.getConnection();
+            // 开启事务设置非自动提交
+            JDBCUtils.startTransaction();
+            // 获得Statement对象
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, homework_title);
+            stmt.setString(2, teacher_name);
+            stmt.setString(3, student.getStudent_name());
+            stmt.setString(4, content);
+            stmt.executeUpdate();
+
+            // 提交事务
+            JDBCUtils.commit();
+        } catch(Exception e) {
+            JDBCUtils.rollback();
+        } finally {
+            // 释放资源
+            JDBCUtils.release(connection, stmt, null);
+        }
     }
 }

@@ -19,7 +19,6 @@ public class AddHomeworkServlet extends HttpServlet {
 
         String teacher_name = (String) req.getSession().getAttribute("teacher_name");
         String homework_title = (String) req.getParameter("homework_title");
-        System.out.println(teacher_name + homework_title);
         Teacher teacher = new Teacher(teacher_name);
         TeacherJdbc teacher_jdbc = new TeacherJdbc();
         teacher_jdbc.AddHomework(teacher, homework_title);

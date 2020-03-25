@@ -19,7 +19,6 @@ public class AddStudentServlet extends HttpServlet {
 
         String teacher_name = (String) req.getSession().getAttribute("teacher_name");
         String student_name = (String) req.getParameter("student_name");
-        System.out.println(teacher_name + student_name);
         Teacher teacher = new Teacher(teacher_name);
         TeacherJdbc teacher_jdbc = new TeacherJdbc();
         teacher_jdbc.AddStudent(teacher, student_name);
